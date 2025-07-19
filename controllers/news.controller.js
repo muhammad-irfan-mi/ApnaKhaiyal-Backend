@@ -3,7 +3,7 @@ const { uploadFileToS3 } = require('../services/s3.service');
 
 const addNews = async (req, res) => {
     try {
-        const { title, description } = req.body;
+        const { title, author, description } = req.body;
 
         if (!req.file || !title || !description) {
             return res.status(400).json({ message: 'All fields are required including image.' });
@@ -17,6 +17,7 @@ const addNews = async (req, res) => {
 
         const news = new News({
             title,
+            author,
             description,
             imageUrl: uploadedImageUrl,
         });
@@ -53,8 +54,8 @@ const getNewsById = async (req, res) => {
 };
 
 
-module.exports = { 
+module.exports = {
     addNews,
     getAllNews,
     getNewsById
- };
+};
