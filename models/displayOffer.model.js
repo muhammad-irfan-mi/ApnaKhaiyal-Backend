@@ -9,12 +9,12 @@ const DisplayOffer = new mongoose.Schema({
   businessType: String,
   category: {
     type: String,
-    enum: ['town', 'marketing', 'property']
+    enum: ['town', 'marketing', 'property', 'inspection', 'developer', 'map', 'architecture', 'photographer']
   },
   designImageUrl: String,
   paymentSlipUrl: String,
   status: {
-    type: String, 
+    type: String,
     enum: ['pending', 'approved', 'rejected'],
     default: 'pending'
   },
