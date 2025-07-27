@@ -5,6 +5,11 @@ const createDisplayOffer = async (req, res) => {
   try {
     const { name, cell, email, city, address, businessType, category } = req.body;
 
+
+    if (!req.files?.design?.[0] || !req.files?.slip?.[0]) {
+      return res.status(400).json({ error: "Design and Slip images are required." });
+    }
+    
     const designImage = await uploadFileToS3({
       fileBuffer: req.files.design[0].buffer,
       fileName: req.files.design[0].originalname,
