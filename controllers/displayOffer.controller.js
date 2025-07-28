@@ -24,7 +24,8 @@ const createDisplayOffer = async (req, res) => {
       mimeType: req.files.slip[0].mimetype,
     });
 
-
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 7);
 
     const offer = await DisplayOffer.create({
       name,
@@ -36,6 +37,7 @@ const createDisplayOffer = async (req, res) => {
       category,
       designImageUrl: designImage,
       paymentSlipUrl: paymentSlip,
+      expiryDate
     });
 
     res.status(201).json(offer);

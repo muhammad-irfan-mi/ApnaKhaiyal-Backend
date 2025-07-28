@@ -7,13 +7,9 @@ const DisplayOffer = new mongoose.Schema({
   city: String,
   address: String,
   businessType: String,
-  category: {
+ category: {
     type: String,
-    // enum: ['town', 'marketing', 'property']
-    category: {
-      type: String,
-      enum: ['town', 'marketing', 'property', 'inspection', 'developer', 'map', 'architecture', 'photographer']
-    }
+    enum: ['town', 'marketing', 'property', 'inspection', 'developer', 'map', 'architecture', 'photographer']
   },
   designImageUrl: String,
   paymentSlipUrl: String,
