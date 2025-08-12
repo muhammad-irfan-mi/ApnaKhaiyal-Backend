@@ -8,10 +8,12 @@ const createDisplayOffer = async (req, res) => {
     if (!name || !cell || !email || !city || !address || !businessType || !category) {
       return res.status(400).json({ error: "All fields are required." });
     }
+    console.log("FILES:", req.files);
 
     if (!req.files?.design?.[0] || !req.files?.slip?.[0]) {
       return res.status(400).json({ error: "Design and Slip images are required." });
     }
+
 
     const designImage = await uploadFileToS3({
       fileBuffer: req.files.design[0].buffer,

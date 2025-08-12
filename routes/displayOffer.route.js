@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
-const { upload } = require('../utils/multer');
 const { createDisplayOffer, updateDisplayOffer, getDisplayOffer } = require('../controllers/displayOffer.controller');
+const { upload } = require('../utils/multer');
 const router = express.Router();
 
 
