@@ -1,81 +1,37 @@
-// const mongoose = require('mongoose');
-
-// const userSchema = new mongoose.Schema(
-//   {
-//     name: {
-//       type: String,
-//     },
-//     email: {
-//       type: String,
-//       required: true,
-//       unique: true,
-//     },
-//     phoneNumber: {
-//       type: String,
-//     },
-//     password: {
-//       type: String,
-//     },
-//     roles: {
-//       type: String,
-//       enum: ["LOCAL SERVICES", "TOWN OWNER", "PROPERTY AGENT", "MARKETING AGENCIES", "INDIVIDUAL ACCOUNT"],
-//     },
-//   },
-//   {
-//     timestamps: true,
-//   }
-// );
-
-
-// const UserModel = mongoose.model('User', userSchema);
-
-// module.exports = UserModel;
-
-
-// models/User.js
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema(
   {
     // Basic User Info
-    name: String,
+    name: { type: String, default: "" },
     email: { type: String, required: true, unique: true },
-    phoneNumber: String,
-    password: String,
+    phoneNumber: { type: String, default: "" },
+    password: { type: String, default: "" },
     roles: {
       type: String,
       enum: ["LOCAL SERVICES", "TOWN OWNER", "PROPERTY AGENT", "MARKETING AGENCIES", "INDIVIDUAL ACCOUNT"],
+      default: "INDIVIDUAL ACCOUNT"
     },
 
-    // Profile Info (Merged)
-    bannerUrl: String,
-    logoUrl: String,
-    alwaysOpen: Boolean,
-    openingHours: {
-      monday: { open: String, close: String },
-      tuesday: { open: String, close: String },
-      wednesday: { open: String, close: String },
-      thursday: { open: String, close: String },
-      friday: { open: String, close: String },
-      saturday: { open: String, close: String },
-      sunday: { open: String, close: String }
-    },
-    agencyNotes: String,
-    healthStrategy: String,
-    localAddress: String,
-    status: String,
-    values: String,
-    address: String,
-    publicNavigation: String,
+    bannerUrl: { type: String, default: "" },
+    logoUrl: { type: String, default: "" },
+    agencyNotes: { type: String, default: "" },
+    healthStrategy: { type: String, default: "" },
+    localAddress: { type: String, default: "" },
+    status: { type: String, default: "inactive" },
+    values: { type: String, default: "" },
+    address: { type: String, default: "" },
+    publicNavigation: { type: String, default: "" },
+
     socialMedia: {
-      twitter: String,
-      instagram: String,
-      linkedIn: String,
-      phoenix: String
+      twitter: { type: String, default: "" },
+      instagram: { type: String, default: "" },
+      linkedIn: { type: String, default: "" },
+      phoenix: { type: String, default: "" }
     },
-    media: String,
-    time: String,
-    faith: String,
+
+    media: { type: String, default: "" },
+    time: { type: String, default: "" },
   },
   { timestamps: true }
 );
