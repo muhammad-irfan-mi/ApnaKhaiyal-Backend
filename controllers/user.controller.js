@@ -56,9 +56,20 @@ const getAllTownOwners = async (req, res) => {
     }
 };
 
+const getAllMarketingAgencies = async (req, res) => {
+    try {
+        const users = await UserModel.find({ roles: 'MARKETING AGENCIES' });
+        res.status(200).json(users);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Internal Server Error" });
+    }
+};
+
 
 module.exports = {
     getUserById,
     updateUserById,
-    getAllTownOwners
+    getAllTownOwners,
+    getAllMarketingAgencies
 }
