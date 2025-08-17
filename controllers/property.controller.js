@@ -1,16 +1,36 @@
 const property = require("../models/property.model");
+const UserModel = require("../models/user.model");
 const { uploadFileToS3 } = require("../services/s3.service");
 
 const addProperty = async (req, res) => {
     try {
+        const userId = req.params
         const { adType, category, title, description, pricingOption, priceType, price, maxPrice, tags, features, videoURL, state, zip, address, phone, whatsapp, email, website, lat, lng
         } = req.body;
 
         // const imageUrls = req.files.map(file => file.location);
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (user.roles === "INDIVIDUAL_ACCOUNT") {
+            const soldCount = await PropertyModel.countDocuments({
+                userId,
+                status: "sold"
+            });
+
+            if (soldCount >= 3) {
+                return res.status(403).json({
+                    message: "You cannot add more properties. Limit reached (3 sold)."
+                });
+            }
+        }
 
         const priceField = pricingOption === "price_range" ? [price, maxPrice] : price;
 
         const newProperty = new property({
+            userId: userId,
             adType,
             category,
             title,

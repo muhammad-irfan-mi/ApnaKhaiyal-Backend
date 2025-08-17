@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const adSchema = new mongoose.Schema({
+    isSold:{
+        type:Boolean,
+        default:false
+    },
+    userId:String,
     adType: String,
     category: String,
     title: String,
