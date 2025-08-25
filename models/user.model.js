@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema(
   {
-    // Basic User Info
     name: { type: String, default: "" },
     email: { type: String, required: true, unique: true },
     phoneNumber: { type: String, default: "" },

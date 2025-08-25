@@ -27,11 +27,24 @@ const updateUserById = async (req, res) => {
         const logoFile = req.files?.['logo']?.[0] || null;
 
         if (bannerFile) {
-            const bannerUrl = await uploadFileToS3(bannerFile);
+            const ext = bannerFile.originalname.split(".").pop();
+            const fileName = `banners/${Date.now()}.${ext}`;
+            const bannerUrl = await uploadFileToS3({
+                fileBuffer: bannerFile.buffer,
+                fileName,
+                mimeType: bannerFile.mimetype,
+            });
             userData.bannerUrl = bannerUrl;
         }
+
         if (logoFile) {
-            const logoUrl = await uploadFileToS3(logoFile);
+            const ext = logoFile.originalname.split(".").pop();
+            const fileName = `logos/${Date.now()}.${ext}`;
+            const logoUrl = await uploadFileToS3({
+                fileBuffer: logoFile.buffer,
+                fileName,
+                mimeType: logoFile.mimetype,
+            });
             userData.logoUrl = logoUrl;
         }
 
