@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 
 
 const handleSignUp = async (req, res) => {
-    const { name, email, password, phoneNumber, roles } = req.body;
+    const { name, email, password, phoneNumber, roles, localServices } = req.body;
 
     try {
         if (!name || !email || !password || !phoneNumber || !roles) return res.status(404).json({ msg: "Please Enter Email And Password" })
@@ -16,15 +16,20 @@ const handleSignUp = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const User = new UserModel({
+        const userData = {
             name,
             email,
             password: hashedPassword,
             phoneNumber,
             roles,
-        });
+        };
 
-        const user = await User.save();
+        if (roles === "LOCAL SERVICES" && Array.isArray(localServices)) {
+            userData.localServices = localServices;
+        }
+
+        const newUser = new UserModel(userData);
+        const user = await newUser.save();
         res.status(201).json({
             msg: "User Created Successfully", user
         });

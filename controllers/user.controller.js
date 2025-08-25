@@ -66,10 +66,32 @@ const getAllMarketingAgencies = async (req, res) => {
     }
 };
 
+const getAllPropertyAgent = async (req, res) => {
+    try {
+        const users = await UserModel.find({ roles: 'PROPERTY AGENT' });
+        res.status(200).json(users);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Internal Server Error" });
+    }
+};
+
+const getAllLocalServicesUser = async (req, res) => {
+    try {
+        const users = await UserModel.find({ roles: 'LOCAL SERVICES' });
+        res.status(200).json(users);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Internal Server Error" });
+    }
+};
+
 
 module.exports = {
     getUserById,
     updateUserById,
     getAllTownOwners,
-    getAllMarketingAgencies
+    getAllMarketingAgencies,
+    getAllPropertyAgent,
+    getAllLocalServicesUser
 }

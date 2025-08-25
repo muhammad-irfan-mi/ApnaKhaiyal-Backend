@@ -13,6 +13,18 @@ const userSchema = new mongoose.Schema(
       default: "INDIVIDUAL ACCOUNT"
     },
 
+    localServices: {
+      type: [String],
+      enum: [
+        "Home Inspection",
+        "Home Developers",
+        "Map officer",
+        "Architecture Engineers",
+        "Property Photographers"
+      ],
+      default: []
+    },
+    
     bannerUrl: { type: String, default: "" },
     logoUrl: { type: String, default: "" },
     agencyNotes: { type: String, default: "" },

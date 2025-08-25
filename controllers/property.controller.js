@@ -4,7 +4,7 @@ const { uploadFileToS3 } = require("../services/s3.service");
 
 const addProperty = async (req, res) => {
     try {
-        const userId = req.params
+        const { userId } = req.params;
         const { adType, category, title, description, pricingOption, priceType, price, maxPrice, tags, features, videoURL, state, zip, address, phone, whatsapp, email, website, lat, lng
         } = req.body;
 
@@ -14,10 +14,10 @@ const addProperty = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        if (user.roles === "INDIVIDUAL_ACCOUNT") {
-            const soldCount = await PropertyModel.countDocuments({
+        if (user.roles === "INDIVIDUAL ACCOUNT") {
+            const soldCount = await property.countDocuments({
                 userId,
-                status: "sold"
+                isSold: false
             });
 
             if (soldCount >= 3) {

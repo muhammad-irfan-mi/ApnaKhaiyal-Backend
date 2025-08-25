@@ -33,6 +33,7 @@ app.use('/api/town', require('./routes/town.routes'))
 app.use('/api/city', require('./routes/city.route'))
 app.use('/api/property', require('./routes/property.route'))
 app.use('/api/news', require('./routes/news.routes'))
+app.use('/api/complain', require('./routes/complaint.routes'))
 app.use('/api/displayOffer', require('./routes/displayOffer.route'))
 
 
