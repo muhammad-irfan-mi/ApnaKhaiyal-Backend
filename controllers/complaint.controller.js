@@ -31,7 +31,16 @@ const handleAddComplaint = async (req, res) => {
 
 }
 
+const getAllComplaint = async (req, res) => {
+    try {
+       const response = await complaintModel.find()
+       return res.status(200).json({response}) 
+    } catch (error) {
+        return res.status(500).json({msg:'Internal server error'})
+    }
+}
 
 module.exports = {
-    handleAddComplaint
+    handleAddComplaint,
+    getAllComplaint
 }
