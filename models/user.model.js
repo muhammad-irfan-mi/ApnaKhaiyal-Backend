@@ -11,7 +11,11 @@ const userSchema = new mongoose.Schema(
       enum: ["LOCAL SERVICES", "TOWN OWNER", "PROPERTY AGENT", "MARKETING AGENCIES", "INDIVIDUAL ACCOUNT"],
       default: "INDIVIDUAL ACCOUNT"
     },
-
+    akCode: {
+      type: String,
+      unique: true,
+      required: true,
+    },
     localServices: {
       type: [String],
       enum: [
@@ -23,7 +27,7 @@ const userSchema = new mongoose.Schema(
       ],
       default: []
     },
-    
+
     bannerUrl: { type: String, default: "" },
     logoUrl: { type: String, default: "" },
     agencyNotes: { type: String, default: "" },
@@ -35,10 +39,14 @@ const userSchema = new mongoose.Schema(
     publicNavigation: { type: String, default: "" },
 
     socialMedia: {
+      facebook: { type: String, default: "" },
       twitter: { type: String, default: "" },
       instagram: { type: String, default: "" },
+      youtube: { type: String, default: "" },
       linkedIn: { type: String, default: "" },
-      phoenix: { type: String, default: "" }
+      pinterest: { type: String, default: "" },
+      reddit: { type: String, default: "" },
+      tiktok: { type: String, default: "" }
     },
 
     media: { type: String, default: "" },

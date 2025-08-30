@@ -1,11 +1,12 @@
 const UserModel = require('../models/user.model')
+const generateAkCode = require('../utils/generateAkCode')
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 
 const handleSignUp = async (req, res) => {
-    const { name, email, password, phoneNumber, roles, localServices } = req.body;
+    const { name, email, password, phoneNumber, roles, localServices, socialMedia } = req.body;
 
     try {
         if (!name || !email || !password || !phoneNumber || !roles) return res.status(404).json({ msg: "Please Enter Email And Password" })
@@ -22,6 +23,8 @@ const handleSignUp = async (req, res) => {
             password: hashedPassword,
             phoneNumber,
             roles,
+            akCode: generateAkCode(),
+            socialMedia
         };
 
         if (roles === "LOCAL SERVICES" && Array.isArray(localServices)) {
