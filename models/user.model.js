@@ -11,11 +11,6 @@ const userSchema = new mongoose.Schema(
       enum: ["LOCAL SERVICES", "TOWN OWNER", "PROPERTY AGENT", "MARKETING AGENCIES", "INDIVIDUAL ACCOUNT"],
       default: "INDIVIDUAL ACCOUNT"
     },
-    akCode: {
-      type: String,
-      unique: true,
-      required: true,
-    },
     localServices: {
       type: [String],
       enum: [
@@ -27,16 +22,20 @@ const userSchema = new mongoose.Schema(
       ],
       default: []
     },
-
     bannerUrl: { type: String, default: "" },
     logoUrl: { type: String, default: "" },
-    agencyNotes: { type: String, default: "" },
-    healthStrategy: { type: String, default: "" },
-    localAddress: { type: String, default: "" },
-    status: { type: String, default: "inactive" },
-    values: { type: String, default: "" },
+    agencyName: { type: String, default: "" },
+    akCode: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+    slogan: { type: String, default: "" },
+    agencyEmail: { type: String, default: "" },
+    agencyPhone: { type: Number, default: "" },
+    agencyWebsite: { type: Number, default: "" },
     address: { type: String, default: "" },
-    publicNavigation: { type: String, default: "" },
+    profileDesc: { type: String, default: "" },
 
     socialMedia: {
       facebook: { type: String, default: "" },
@@ -49,6 +48,9 @@ const userSchema = new mongoose.Schema(
       tiktok: { type: String, default: "" }
     },
 
+    status: { type: String, default: "inactive" },
+    values: { type: String, default: "" },
+    publicNavigation: { type: String, default: "" },
     media: { type: String, default: "" },
     time: { type: String, default: "" },
   },
