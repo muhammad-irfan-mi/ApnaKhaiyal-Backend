@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema(
     slogan: { type: String, default: "" },
     agencyEmail: { type: String, default: "" },
     agencyPhone: { type: Number, default: "" },
-    agencyWebsite: { type: Number, default: "" },
+    agencyWebsite: { type: String, default: "" },
     address: { type: String, default: "" },
     profileDesc: { type: String, default: "" },
 
