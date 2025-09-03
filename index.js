@@ -1,8 +1,10 @@
 const express = require('express')
 const dotenv = require('dotenv');
-const connectDB = require('./config/db')
 const cookieParser = require('cookie-parser');
 const cors = require('cors')
+const http = require("http");
+const { Server } = require("socket.io");
+const connectDB = require('./config/db')
 
 dotenv.config()
 const app = express()
@@ -35,8 +37,35 @@ app.use('/api/property', require('./routes/property.route'))
 app.use('/api/news', require('./routes/news.routes'))
 app.use('/api/complain', require('./routes/complaint.routes'))
 app.use('/api/displayOffer', require('./routes/displayOffer.route'))
+app.use("/api/chat", require("./routes/chat.routes"));
 
+const server = http.createServer(app);
 
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+
+io.on("connection", (socket) => {
+    console.log("User connected:", socket.id);
+
+    socket.on("joinRoom", (userId) => {
+        socket.join(userId);
+        console.log(`User ${userId} joined room`);
+    });
+
+    socket.on("sendMessage", ({ senderId, receiverId, message }) => {
+        console.log("Message:", { senderId, receiverId, message });
+
+        io.to(receiverId).emit("receiveMessage", { senderId, message });
+    });
+
+    socket.on("disconnect", () => {
+        console.log("User disconnected:", socket.id);
+    });
+});
 
 app.listen(process.env.PORT, () => {
     console.log(`Server Started at PORT: ${process.env.PORT}`)
