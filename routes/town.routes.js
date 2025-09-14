@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { addTown, getTownById, getAllTowns, getTownsByUser, updatePlotStatusAndDealer, deleteDealerfromPlot } = require("../controllers/town.controller");
+const { addTown, getTownById, getAllTowns, getTownsByUser, updatePlotStatusAndDealer, deleteDealerfromPlot, updateTownById, deleteTownById } = require("../controllers/town.controller");
 const { townUpload } = require("../utils/multer");
 const { verifyToken } = require("../middleware/verifyToken.service");
 
@@ -10,5 +10,8 @@ router.get("/by-user/:id", getTownsByUser);
 router.get("/:id", getTownById);
 router.patch("/plot/:plotNumberId", updatePlotStatusAndDealer);
 router.delete("/plot/:plotNumberId", deleteDealerfromPlot);
+router.put("/:id", townUpload, updateTownById);
+router.delete("/:id", deleteTownById);
+
 
 module.exports = router;
