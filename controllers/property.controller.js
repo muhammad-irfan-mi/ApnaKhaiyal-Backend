@@ -146,10 +146,141 @@ const getPropertyByUser = async (req, res) => {
     }
 }
 
+const updatePropertyById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        let existingProperty = await property.findById(id);
+        if (!existingProperty) {
+            return res.status(404).json({ message: "Property not found" });
+        }
+
+        const {
+            adType,
+            category,
+            title,
+            description,
+            pricingOption,
+            priceType,
+            price,
+            maxPrice,
+            tags,
+            features,
+            videoURL,
+            state,
+            zip,
+            address,
+            phone,
+            whatsapp,
+            email,
+            website,
+            lat,
+            lng,
+            isSold,
+        } = req.body;
+
+        if (adType) existingProperty.adType = adType;
+        if (category) existingProperty.category = category;
+        if (title) existingProperty.title = title;
+        if (description) existingProperty.description = description;
+        if (pricingOption) existingProperty.pricingOption = pricingOption;
+        if (priceType) existingProperty.priceType = priceType;
+
+        if (typeof isSold !== "undefined") {
+            existingProperty.isSold = isSold;
+        }
+        if (pricingOption === "price_range" && (price || maxPrice)) {
+            existingProperty.price = [
+                price ?? existingProperty.price?.[0],
+                maxPrice ?? existingProperty.price?.[1],
+            ];
+        } else if (price) {
+            existingProperty.price = price;
+        }
+
+        if (tags) existingProperty.tags = tags.split(",").map(t => t.trim());
+        if (features) existingProperty.features = features.split("\n");
+
+        if (videoURL) existingProperty.videoURL = videoURL;
+
+        // Contact updates
+        if (state) existingProperty.contact.state = state;
+        if (zip) existingProperty.contact.zip = zip;
+        if (address) existingProperty.contact.address = address;
+        if (phone) existingProperty.contact.phone = phone;
+        if (whatsapp) existingProperty.contact.whatsapp = whatsapp;
+        if (email) existingProperty.contact.email = email;
+        if (website) existingProperty.contact.website = website;
+
+        // Lat/lng
+        if (lat) existingProperty.lat = lat;
+        if (lng) existingProperty.lng = lng;
+
+        // Handle image uploads (with 15 max limit)
+        if (req.files && req.files.length > 0) {
+            const currentImageCount = existingProperty.images.length;
+
+            if (currentImageCount >= 15) {
+                return res.status(400).json({
+                    message: "You cannot upload more than 15 images for a property",
+                });
+            }
+
+            // calculate remaining allowed
+            const remainingSlots = 15 - currentImageCount;
+            const filesToUpload = req.files.slice(0, remainingSlots);
+
+            const uploadedImageUrls = await Promise.all(
+                filesToUpload.map((file, index) => {
+                    const ext = file.originalname.split(".").pop();
+                    const fileName = `ads/${existingProperty._id.toString()}/image_${Date.now()}_${index}.${ext}`;
+                    return uploadFileToS3({
+                        fileBuffer: file.buffer,
+                        fileName,
+                        mimeType: file.mimetype,
+                    });
+                })
+            );
+
+            existingProperty.images = [...existingProperty.images, ...uploadedImageUrls];
+        }
+
+        // Save changes
+        await existingProperty.save();
+
+        res.status(200).json({
+            message: "Property updated successfully",
+            property: existingProperty,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Something went wrong", error });
+    }
+};
+
+const deletePropertyById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const deletedProperty = await property.findByIdAndDelete(id);
+
+        if (!deletedProperty) {
+            return res.status(404).json({ message: "Property not found" });
+        }
+
+        res.status(200).json({ message: "Property deleted successfully" });
+    } catch (error) {
+        console.error("Delete Error:", error);
+        res.status(500).json({ message: "Something went wrong", error });
+    }
+};
+
 module.exports = {
     addProperty,
     incrementView,
     getProperty,
     getPropertyById,
-    getPropertyByUser
+    getPropertyByUser,
+    updatePropertyById,
+    deletePropertyById
 };
