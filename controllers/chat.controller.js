@@ -50,4 +50,5 @@ const getReceiversBySender = async (req, res) => {
         return res.status(500).json({ error: error.message });
     }
 };
+
 module.exports = { sendMessage, getChatHistory, getReceiversBySender };

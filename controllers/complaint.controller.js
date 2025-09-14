@@ -40,7 +40,8 @@ const getAllComplaint = async (req, res) => {
     }
 }
 
+
 module.exports = {
     handleAddComplaint,
-    getAllComplaint
+    getAllComplaint,
 }

@@ -125,10 +125,31 @@ const getPropertyById = async (req, res) => {
     }
 };
 
+const getPropertyByUser = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const properties = await property.find({ userId }).sort({ createdAt: -1 });
+
+        if (!properties || properties.length === 0) {
+            return res.status(404).json({ message: "No properties found for this user" });
+        }
+
+        res.status(200).json({ properties });
+
+    } catch (error) {
+        res.send({ msg: "INternal Server Error" })
+    }
+}
 
 module.exports = {
     addProperty,
     incrementView,
     getProperty,
-    getPropertyById
+    getPropertyById,
+    getPropertyByUser
 };
