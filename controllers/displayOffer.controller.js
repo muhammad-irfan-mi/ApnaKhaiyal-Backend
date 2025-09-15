@@ -79,11 +79,15 @@ const getDisplayOffer = async (req, res) => {
 
 const getApprovedDisplayOffer = async (req, res) => {
   try {
-    const { businessType } = req.query;
+    const { businessType, category } = req.query;
 
     const filter = { status: "approved" };
+    
     if (businessType) {
       filter.businessType = businessType;
+    }
+    if (category) {
+      filter.category = category;
     }
 
     const offers = await DisplayOffer.find(filter);
