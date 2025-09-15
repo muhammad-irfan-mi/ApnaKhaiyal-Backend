@@ -79,18 +79,17 @@ const getDisplayOffer = async (req, res) => {
 
 const getApprovedDisplayOffer = async (req, res) => {
   try {
-    const { category } = req.query;
+    const { businessType } = req.query;
 
     const filter = { status: "approved" };
-    if (category) {
-      filter.category = category;  
+    if (businessType) {
+      filter.businessType = businessType;
     }
 
     const offers = await DisplayOffer.find(filter);
 
     res.status(200).json(offers);
   } catch (err) {
-    console.error("Error fetching approved offers:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 };
