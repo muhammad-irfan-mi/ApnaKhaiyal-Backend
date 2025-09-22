@@ -53,6 +53,26 @@ const userSchema = new mongoose.Schema(
     publicNavigation: { type: String, default: "" },
     media: { type: String, default: "" },
     time: { type: String, default: "" },
+    totalListings: { type: Number, default: 0 },
+    publishedListings: { type: Number, default: 0 },
+    pendingListings: { type: Number, default: 0 },
+    listingQuota: {
+      type: Number,
+      default: function () {
+        switch (this.roles) {
+          case "TOWN OWNER":
+            return 10;
+          case "INDIVIDUAL ACCOUNT":
+            return 3;
+          case "PROPERTY AGENT":
+          case "MARKETING AGENCIES":
+          case "LOCAL SERVICES":
+            return 700;
+          default:
+            return 0;
+        }
+      }
+    },
   },
   { timestamps: true }
 );

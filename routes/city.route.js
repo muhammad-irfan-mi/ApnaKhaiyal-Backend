@@ -1,9 +1,18 @@
 const express = require('express');
-const { addCities, getCities } = require('../controllers/city.controller');
 const { upload } = require('../utils/multer');
+const { addCity, updateCity, getCity, deleteCity } = require('../controllers/city.controller');
 const router = express.Router();
 
-router.post('/add', upload.array('images', 10), addCities);
-router.get('/',  getCities);
+// Add a new city or update existing city
+router.post('/add', upload.array('images', 10), addCity);
+
+// Update city details
+router.put('/update', updateCity);
+
+// Get all provinces and cities
+router.get('/', getCity);
+
+// Delete city
+router.delete('/', deleteCity);
 
 module.exports = router;

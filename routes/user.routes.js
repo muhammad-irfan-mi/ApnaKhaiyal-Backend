@@ -5,7 +5,7 @@ const { getUserById, updateUserById, getAllTownOwners, getAllMarketingAgencies, 
 
 const router = express.Router();
 
-router.get('/getUser/:id', verifyToken, getUserById);
+router.get('/getUser/:id', getUserById);
 router.patch('/updateUser/:id', upload.fields([
     { name: 'banner', maxCount: 1 },
     { name: 'logo', maxCount: 1 }

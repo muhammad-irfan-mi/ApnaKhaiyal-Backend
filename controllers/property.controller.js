@@ -1,3 +1,4 @@
+const propertyModel = require("../models/property.model");
 const property = require("../models/property.model");
 const UserModel = require("../models/user.model");
 const { uploadFileToS3 } = require("../services/s3.service");
@@ -5,14 +6,17 @@ const { uploadFileToS3 } = require("../services/s3.service");
 const addProperty = async (req, res) => {
     try {
         const { userId } = req.params;
-        const { adType, category, title, description, pricingOption, priceType, price, maxPrice, tags, features, videoURL, state, zip, address, phone, whatsapp, email, website, lat, lng
-        } = req.body;
-
-        // const imageUrls = req.files.map(file => file.location);
         const user = await UserModel.findById(userId);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
+
+        if (user.listingQuota <= 0) {
+            return res.status(403).json({ message: "Listing quota exceeded" });
+        }
+
+        const { adType, category, title, description, pricingOption, priceType, price, maxPrice, tags, features, videoURL, state, zip, address, phone, whatsapp, email, website, lat, lng, expireDuration
+        } = req.body;
 
         if (user.roles === "INDIVIDUAL ACCOUNT") {
             const soldCount = await property.countDocuments({
@@ -45,6 +49,8 @@ const addProperty = async (req, res) => {
             lat,
             lng,
             images: [],
+            status: "pending",
+            expiresAt: new Date(Date.now() + (expireDuration || 7 * 24 * 60 * 60 * 1000))
         });
 
         // await newAd.save();
@@ -63,6 +69,11 @@ const addProperty = async (req, res) => {
 
         newProperty.images = uploadedImageUrls;
         await newProperty.save();
+
+        user.listingQuota -= 1;
+        user.totalListings += 1;
+        user.pendingListings += 1;
+        await user.save();
 
         res.status(201).json({ message: "Ad posted successfully", property: newProperty });
     } catch (error) {
@@ -101,7 +112,7 @@ const incrementView = async (req, res) => {
 
 const getProperty = async (req, res) => {
     try {
-        const properties = await property.find().sort({ createdAt: -1 });
+        const properties = await property.find({ status: "approved" }).sort({ createdAt: -1 });
         res.status(200).json(properties);
     } catch (error) {
         console.error('Error fetching ads:', error);
@@ -135,16 +146,61 @@ const getPropertyByUser = async (req, res) => {
 
         const properties = await property.find({ userId }).sort({ createdAt: -1 });
 
-        if (!properties || properties.length === 0) {
-            return res.status(404).json({ message: "No properties found for this user" });
-        }
-
-        res.status(200).json({ properties });
+        res.status(200).json(properties);
 
     } catch (error) {
         res.send({ msg: "INternal Server Error" })
     }
 }
+
+const getPropertyByAdmin = async (req, res) => {
+    try {
+        const properties = await property.find({}).sort({ createdAt: -1 });
+        res.status(200).json(properties);
+    } catch (error) {
+        console.error('Error fetching ads:', error);
+        res.status(500).json({ message: 'Failed to fetch ads', error });
+    }
+};
+
+const updatePropertyStatusByAdmin = async (req, res) => {
+    try {
+        const { propertyId } = req.params;
+        const { status, expireDuration } = req.body;
+
+        if (!["approved", "rejected"].includes(status)) {
+            return res.status(400).json({ message: "Invalid status" });
+        }
+
+        const property = await propertyModel.findById(propertyId);
+        if (!property) return res.status(404).json({ message: "Property not found" });
+
+        const user = await UserModel.findById(property.userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        // Update user counters
+        if (property.status === "pending") {
+            user.pendingListings -= 1;
+        }
+        if (status === "approved") {
+            user.publishedListings += 1;
+        }
+
+        property.status = status;
+
+        if (expireDuration) {
+            property.expiresAt = new Date(Date.now() + expireDuration);
+        }
+
+        await property.save();
+        await user.save();
+
+        res.status(200).json({ message: "Status updated", property, user });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Something went wrong", error });
+    }
+};
 
 const updatePropertyById = async (req, res) => {
     try {
@@ -281,6 +337,8 @@ module.exports = {
     getProperty,
     getPropertyById,
     getPropertyByUser,
+    getPropertyByAdmin,
+    updatePropertyStatusByAdmin,
     updatePropertyById,
     deletePropertyById
 };

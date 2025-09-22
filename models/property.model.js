@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 
 const adSchema = new mongoose.Schema({
-    isSold:{
-        type:Boolean,
-        default:false
+    isSold: {
+        type: Boolean,
+        default: false
     },
-    userId:String,
+    userId: String,
     adType: String,
     category: String,
     title: String,
@@ -33,6 +33,17 @@ const adSchema = new mongoose.Schema({
         default: 0,
     },
     viewedBy: [String],
+    status: {
+        type: String,
+        enum: ["pending", "approved", "rejected"],
+        default: "pending"
+    },
+    expiresAt: {
+        type: Date,
+        default: function () {
+            return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        }
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model("property", adSchema);
