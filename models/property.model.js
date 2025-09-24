@@ -17,7 +17,9 @@ const adSchema = new mongoose.Schema({
     features: [String],
     videoURL: String,
     contact: {
-        state: String,
+        province: String,
+        city: String,
+        location: String,
         zip: String,
         address: String,
         phone: String,

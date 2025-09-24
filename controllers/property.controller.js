@@ -15,7 +15,9 @@ const addProperty = async (req, res) => {
             return res.status(403).json({ message: "Listing quota exceeded" });
         }
 
-        const { adType, category, title, description, pricingOption, priceType, price, maxPrice, tags, features, videoURL, state, zip, address, phone, whatsapp, email, website, lat, lng, expireDuration
+        // const { adType, category, title, description, pricingOption, priceType, price, maxPrice, tags, features, videoURL, state, zip, address, phone, whatsapp, email, website, lat, lng, expireDuration
+        // } = req.body;
+        const { adType, category, title, description, pricingOption, priceType, price, maxPrice, tags, features, videoURL, province, city, location, zip, address, phone, whatsapp, email, website, lat, lng, expireDuration
         } = req.body;
 
         if (user.roles === "INDIVIDUAL ACCOUNT") {
@@ -33,6 +35,28 @@ const addProperty = async (req, res) => {
 
         const priceField = pricingOption === "price_range" ? [price, maxPrice] : price;
 
+        // const newProperty = new property({
+        //     userId: userId,
+        //     adType,
+        //     category,
+        //     title,
+        //     description,
+        //     pricingOption,
+        //     priceType,
+        //     price: priceField,
+        //     tags: tags?.split(",").map(t => t.trim()),
+        //     features: features?.split("\n"),
+        //     videoURL,
+        //     contact: { state, zip, address, phone, whatsapp, email, website },
+        //     lat,
+        //     lng,
+        //     images: [],
+        //     status: "pending",
+        //     expiresAt: new Date(Date.now() + (expireDuration || 7 * 24 * 60 * 60 * 1000))
+        // });
+
+        // await newAd.save();
+
         const newProperty = new property({
             userId: userId,
             adType,
@@ -42,19 +66,27 @@ const addProperty = async (req, res) => {
             pricingOption,
             priceType,
             price: priceField,
-            tags: tags?.split(",").map(t => t.trim()),
-            features: features?.split("\n"),
+            tags: tags ? tags.split(",").map(t => t.trim()) : [],
+            features: features ? features.split("\n") : [],
             videoURL,
-            contact: { state, zip, address, phone, whatsapp, email, website },
-            lat,
-            lng,
+            contact: {
+                province: province || '',
+                city: city || '',
+                location: location || '',
+                zip: zip || '',
+                address: address || '',
+                phone: phone || '',
+                whatsapp: whatsapp || '',
+                email: email || '',
+                website: website || ''
+            },
+            lat: lat ? parseFloat(lat) : null,
+            lng: lng ? parseFloat(lng) : null,
             images: [],
             status: "pending",
-            expiresAt: new Date(Date.now() + (expireDuration || 7 * 24 * 60 * 60 * 1000))
+            expiresAt: new Date(Date.now() + (expireDuration ? parseInt(expireDuration, 10) : 7 * 24 * 60 * 60 * 1000))
         });
-
-        // await newAd.save();
-
+        
         const uploadedImageUrls = await Promise.all(
             req.files.map((file, index) => {
                 const ext = file.originalname.split(".").pop();
