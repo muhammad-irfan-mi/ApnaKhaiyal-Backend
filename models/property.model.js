@@ -40,6 +40,11 @@ const adSchema = new mongoose.Schema({
         enum: ["pending", "approved", "rejected"],
         default: "pending"
     },
+    listingType: {
+        type: String,
+        enum: ["listing", "featured", "top"],
+        default: "listing"
+    },
     expiresAt: {
         type: Date,
         default: function () {

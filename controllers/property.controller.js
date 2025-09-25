@@ -11,14 +11,18 @@ const addProperty = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        if (user.listingQuota <= 0) {
-            return res.status(403).json({ message: "Listing quota exceeded" });
-        }
-
-        // const { adType, category, title, description, pricingOption, priceType, price, maxPrice, tags, features, videoURL, state, zip, address, phone, whatsapp, email, website, lat, lng, expireDuration
-        // } = req.body;
-        const { adType, category, title, description, pricingOption, priceType, price, maxPrice, tags, features, videoURL, province, city, location, zip, address, phone, whatsapp, email, website, lat, lng, expireDuration
+        const { adType, category, title, description, pricingOption, priceType, price, maxPrice, tags, features, videoURL, province, city, location, zip, address, phone, whatsapp, email, website, lat, lng, expireDuration, listingType
         } = req.body;
+
+        if (listingType === "listing" && user.listingQuota <= 0) {
+            return res.status(403).json({ message: "Listing Limit exceeded" });
+        }
+        if (listingType === "featured" && user.featureQuota <= 0) {
+            return res.status(403).json({ message: "Featured Limit exceeded" });
+        }
+        if (listingType === "top" && user.topQuota <= 0) {
+            return res.status(403).json({ message: "Top Limit exceeded" });
+        }
 
         if (user.roles === "INDIVIDUAL ACCOUNT") {
             const soldCount = await property.countDocuments({
@@ -34,28 +38,6 @@ const addProperty = async (req, res) => {
         }
 
         const priceField = pricingOption === "price_range" ? [price, maxPrice] : price;
-
-        // const newProperty = new property({
-        //     userId: userId,
-        //     adType,
-        //     category,
-        //     title,
-        //     description,
-        //     pricingOption,
-        //     priceType,
-        //     price: priceField,
-        //     tags: tags?.split(",").map(t => t.trim()),
-        //     features: features?.split("\n"),
-        //     videoURL,
-        //     contact: { state, zip, address, phone, whatsapp, email, website },
-        //     lat,
-        //     lng,
-        //     images: [],
-        //     status: "pending",
-        //     expiresAt: new Date(Date.now() + (expireDuration || 7 * 24 * 60 * 60 * 1000))
-        // });
-
-        // await newAd.save();
 
         const newProperty = new property({
             userId: userId,
@@ -83,10 +65,11 @@ const addProperty = async (req, res) => {
             lat: lat ? parseFloat(lat) : null,
             lng: lng ? parseFloat(lng) : null,
             images: [],
+            listingType: listingType || "listing",
             status: "pending",
             expiresAt: new Date(Date.now() + (expireDuration ? parseInt(expireDuration, 10) : 7 * 24 * 60 * 60 * 1000))
         });
-        
+
         const uploadedImageUrls = await Promise.all(
             req.files.map((file, index) => {
                 const ext = file.originalname.split(".").pop();
@@ -102,7 +85,10 @@ const addProperty = async (req, res) => {
         newProperty.images = uploadedImageUrls;
         await newProperty.save();
 
-        user.listingQuota -= 1;
+        if (listingType === "listing") user.listingQuota -= 1;
+        if (listingType === "featured") user.featureQuota -= 1;
+        if (listingType === "top") user.topQuota -= 1;
+        
         user.totalListings += 1;
         user.pendingListings += 1;
         await user.save();
