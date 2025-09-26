@@ -116,7 +116,7 @@ const getMembershipByUser = async (req, res) => {
             return res.status(400).json({ message: "userId is required" });
         }
 
-        const membership = await Membership.findOne({ userId })
+        const membership = await Membership.find({ userId })
             .populate("userId", "name email phoneNumber listingQuota featureQuota topQuota isFreePlan")
             .sort({ createdAt: -1 });
 
