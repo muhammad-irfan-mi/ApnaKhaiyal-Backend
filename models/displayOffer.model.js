@@ -7,7 +7,7 @@ const DisplayOffer = new mongoose.Schema({
   city: String,
   address: String,
   businessType: String,
- category: {
+  category: {
     type: String,
     enum: ['town', 'marketing', 'property', 'inspection', 'developer', 'map', 'architecture', 'photographer']
   },
@@ -20,6 +20,6 @@ const DisplayOffer = new mongoose.Schema({
   },
   createdAt: { type: Date, default: Date.now },
   expiryDate: { type: Date }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('DisplayOffer', DisplayOffer);

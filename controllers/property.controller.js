@@ -88,7 +88,7 @@ const addProperty = async (req, res) => {
         if (listingType === "listing") user.listingQuota -= 1;
         if (listingType === "featured") user.featureQuota -= 1;
         if (listingType === "top") user.topQuota -= 1;
-        
+
         user.totalListings += 1;
         user.pendingListings += 1;
         await user.save();
@@ -130,13 +130,23 @@ const incrementView = async (req, res) => {
 
 const getProperty = async (req, res) => {
     try {
-        const properties = await property.find({ status: "approved" }).sort({ createdAt: -1 });
+        const { listingType } = req.query; 
+
+        const filter = { status: "approved" };
+
+        if (listingType) {
+            filter.listingType = listingType;
+        }
+
+        const properties = await property.find(filter).sort({ createdAt: -1 });
+
         res.status(200).json(properties);
     } catch (error) {
-        console.error('Error fetching ads:', error);
-        res.status(500).json({ message: 'Failed to fetch ads', error });
+        console.error("Error fetching ads:", error);
+        res.status(500).json({ message: "Failed to fetch ads", error });
     }
 };
+
 
 const getPropertyById = async (req, res) => {
     try {
