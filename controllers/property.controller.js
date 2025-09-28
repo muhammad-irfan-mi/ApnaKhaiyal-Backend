@@ -147,7 +147,6 @@ const getProperty = async (req, res) => {
     }
 };
 
-
 const getPropertyById = async (req, res) => {
     try {
         const { id } = req.params;
