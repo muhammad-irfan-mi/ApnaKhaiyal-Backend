@@ -42,13 +42,31 @@ const getReceiversBySender = async (req, res) => {
     try {
         const { senderId } = req.params;
 
-        const receiverIds = await Chat.find({ senderId }).distinct("receiverId");
-        const receivers = await UserModel.find({ _id: { $in: receiverIds } }).select("-password");
+        // Get latest message timestamp for each receiver
+        const lastChats = await Chat.aggregate([
+            { $match: { senderId } },
+            { $sort: { createdAt: -1 } }, // newest first
+            {
+                $group: {
+                    _id: "$receiverId",
+                    lastMessageAt: { $first: "$createdAt" }
+                }
+            },
+            { $sort: { lastMessageAt: -1 } } 
+        ]);
 
-        return res.status(200).json({ success: true, data: receivers });
+        const receiverIds = lastChats.map(c => c._id);
+
+        const receivers = await UserModel.find({ _id: { $in: receiverIds } })
+            .select("-password");
+
+        const orderedReceivers = receiverIds.map(id => receivers.find(u => u._id.toString() === id.toString()));
+
+        return res.status(200).json({ success: true, data: orderedReceivers });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
 };
+
 
 module.exports = { sendMessage, getChatHistory, getReceiversBySender };

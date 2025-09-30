@@ -1,4 +1,5 @@
 const Membership = require("../models/membership.model");
+const Plan = require("../models/Plan");
 const UserModel = require("../models/user.model");
 const { uploadFileToS3 } = require("../services/s3.service");
 const crypto = require('crypto');
@@ -31,9 +32,12 @@ const purchasePlan = async (req, res) => {
         const user = await UserModel.findById(userId);
         if (!user) return res.status(404).json({ message: "User not found" });
 
-        const { plan, firstName, companyName, phone, email } = req.body || {};
+        const { plan, price, firstName, companyName, phone, email } = req.body || {};
         if (!["free", "medium", "premium"].includes(plan)) {
             return res.status(400).json({ message: "Invalid plan selected" });
+        }
+        if (price == null) {
+            return res.status(400).json({ message: "Price is required" });
         }
 
         if (plan === "free" && user.isFreePlan) {
@@ -62,6 +66,7 @@ const purchasePlan = async (req, res) => {
         const membership = new Membership({
             userId: user._id,
             plan,
+            price,
             firstName,
             companyName,
             phone,
@@ -83,7 +88,7 @@ const purchasePlan = async (req, res) => {
 
         user.planExpiry = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
         await user.save();
-        
+
         res.status(201).json({
             message: plan === "free"
                 ? "Free plan activated successfully"
@@ -141,9 +146,21 @@ const approveMembership = async (req, res) => {
             return res.status(400).json({ message: "Already approved" });
         }
 
+        // Fetch plan details from DB
+        const plan = await Plan.findOne({ tier: membership.plan });
+        if (!plan) {
+            return res.status(404).json({ message: "Plan not found" });
+        }
+
         const quota = PLAN_QUOTAS[membership.plan];
 
         membership.status = "approved";
+
+        if (!membership.price) {
+            membership.price = plan.price;
+            membership.currency = plan.currency;
+        }
+
         await membership.save();
 
         membership.userId.listingQuota += quota.listing;

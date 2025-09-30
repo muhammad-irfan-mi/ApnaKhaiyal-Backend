@@ -3,6 +3,11 @@ const mongoose = require("mongoose");
 const membershipSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   plan: { type: String, enum: ["free", "medium", "premium"], required: true },
+  price: {
+    type: Number,
+    required: true,
+    min: 0
+  },
   firstName: String,
   companyName: String,
   address: String,
