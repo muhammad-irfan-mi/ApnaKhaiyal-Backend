@@ -31,6 +31,11 @@ const handleSignUp = async (req, res) => {
             userData.localServices = localServices;
         }
 
+        if (roles === "INDIVIDUAL ACCOUNT") {
+            userData.listingQuota = 3;
+            userData.status = "active";   
+        }
+
         const newUser = new UserModel(userData);
         const user = await newUser.save();
         res.status(201).json({

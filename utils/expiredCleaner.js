@@ -24,7 +24,6 @@ cron.schedule("0 * * * *", async () => {
             user.featureQuota = 0;
             user.topQuota = 0;
             user.planExpiry = null;
-            user.isFreePlan = false;
             await user.save();
             console.log(`Reset quotas for user: ${user._id}`);
         }

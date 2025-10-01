@@ -87,6 +87,11 @@ const purchasePlan = async (req, res) => {
         user.topQuota = PLAN_QUOTAS[plan].top;
 
         user.planExpiry = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
+
+        if (user.roles === "INDIVIDUAL ACCOUNT") {
+            user.roles = "PROPERTY AGENT";
+        }
+
         await user.save();
 
         res.status(201).json({
