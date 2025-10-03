@@ -42,17 +42,16 @@ const getReceiversBySender = async (req, res) => {
     try {
         const { senderId } = req.params;
 
-        // Get latest message timestamp for each receiver
         const lastChats = await Chat.aggregate([
             { $match: { senderId } },
-            { $sort: { createdAt: -1 } }, // newest first
+            { $sort: { createdAt: -1 } },
             {
                 $group: {
                     _id: "$receiverId",
                     lastMessageAt: { $first: "$createdAt" }
                 }
             },
-            { $sort: { lastMessageAt: -1 } } 
+            { $sort: { lastMessageAt: -1 } }
         ]);
 
         const receiverIds = lastChats.map(c => c._id);
@@ -68,5 +67,32 @@ const getReceiversBySender = async (req, res) => {
     }
 };
 
+// Get all senders who messaged a user
+const getSendersByReceiver = async (req, res) => {
+    try {
+        const { receiverId } = req.params;
 
-module.exports = { sendMessage, getChatHistory, getReceiversBySender };
+        const lastChats = await Chat.aggregate([
+            { $match: { receiverId } },
+            { $sort: { createdAt: -1 } },
+            {
+                $group: {
+                    _id: "$senderId",
+                    lastMessageAt: { $first: "$createdAt" }
+                }
+            },
+            { $sort: { lastMessageAt: -1 } }
+        ]);
+
+        const senderIds = lastChats.map(c => c._id);
+        const senders = await UserModel.find({ _id: { $in: senderIds } }).select("-password");
+
+        const orderedSenders = senderIds.map(id => senders.find(u => u._id.toString() === id.toString()));
+
+        return res.status(200).json({ success: true, data: orderedSenders });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = { sendMessage, getChatHistory, getReceiversBySender, getSendersByReceiver };
