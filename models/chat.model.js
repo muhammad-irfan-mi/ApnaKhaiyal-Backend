@@ -12,18 +12,26 @@ const messageSchema = new mongoose.Schema(
         },
         message: {
             type: String,
-            required: true
+            default: ""
         },
         messageType: {
             type: String,
-            enum: ['text', 'image', 'audio', 'video'],
+            enum: ['text', 'image', 'audio', 'video', 'file'],
             default: 'text'
         },
         fileUrl: {
             type: String,
             default: null
         },
-        isRead: {
+        fileName: {
+            type: String,
+            default: null
+        },
+        fileSize: {
+            type: Number,
+            default: 0
+        },
+        isDeleted: {
             type: Boolean,
             default: false
         }
