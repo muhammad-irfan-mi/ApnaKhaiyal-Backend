@@ -176,14 +176,21 @@ const getTownById = async (req, res) => {
 // };
 
 const updatePropertyStatusAndDealer = async (req, res) => {
-  const { propertyId } = req.params; // propertyId can be a plotNumberId OR shopId
+  const { propertyId } = req.params;
   const { status, dealerName, dealerContact } = req.body;
 
   try {
+    if (!mongoose.Types.ObjectId.isValid(propertyId)) {
+      return res.status(400).json({ error: "Invalid property ID format" });
+    }
+
+    const id = new mongoose.Types.ObjectId(propertyId);
+
+    // Find the town that contains either a plot or shop with this ID
     const town = await Town.findOne({
       $or: [
-        { "phases.plots.plotNumbers._id": propertyId },
-        { "phases.shops.shopNumbers._id": propertyId },
+        { "phases.plots.plotNumbers._id": id },
+        { "phases.shops.shopNumbers._id": id },
       ],
     });
 
@@ -195,9 +202,9 @@ const updatePropertyStatusAndDealer = async (req, res) => {
     let propertyRef = null;
 
     for (const phase of town.phases) {
-      // Try to find in plots
+      // Search in plots
       for (const plot of phase.plots) {
-        const foundPlot = plot.plotNumbers.id(propertyId);
+        const foundPlot = plot.plotNumbers.id(id);
         if (foundPlot) {
           propertyType = "plot";
           propertyRef = foundPlot;
@@ -205,10 +212,10 @@ const updatePropertyStatusAndDealer = async (req, res) => {
         }
       }
 
-      // 🏬 Try to find in shops (if not found in plots)
+      // Search in shops if not found in plots
       if (!propertyRef && Array.isArray(phase.shops)) {
         for (const shop of phase.shops) {
-          const foundShop = shop.shopNumbers.id(propertyId);
+          const foundShop = shop.shopNumbers.id(id);
           if (foundShop) {
             propertyType = "shop";
             propertyRef = foundShop;
@@ -224,7 +231,7 @@ const updatePropertyStatusAndDealer = async (req, res) => {
       return res.status(404).json({ error: "Property (plot/shop) not found" });
     }
 
-    // 📝 Update fields
+    // Update only provided fields
     if (status !== undefined) propertyRef.status = status;
     if (dealerName !== undefined) propertyRef.dealerName = dealerName;
     if (dealerContact !== undefined) propertyRef.dealerContact = dealerContact;
