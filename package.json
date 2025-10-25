@@ -20,7 +20,7 @@
     "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "middleware": "^1.0.0",
-    "mongoose": "^8.14.2",
+    "mongoose": "^8.19.2",
     "multer": "^2.0.0",
     "multer-s3": "^3.0.1",
     "node-cron": "^4.2.1",
