@@ -1,5 +1,6 @@
 const Town = require("../models/town.model");
 const { uploadFileToS3 } = require("../services/s3.service");
+const mongoose = require("mongoose");
 
 const addTown = async (req, res) => {
   const { id } = req.params;
@@ -138,112 +139,76 @@ const getTownById = async (req, res) => {
 };
 
 // update plot stauts and delaer info
-// const updatePlotStatusAndDealer = async (req, res) => {
-//   const { plotNumberId } = req.params;
-//   const { status, dealerName, dealerContact } = req.body;
-
-//   try {
-//     const town = await Town.findOne({
-//       "phases.plots.plotNumbers._id": plotNumberId
-//     });
-
-//     if (!town) return res.status(404).json({ error: "Plot number not found" });
-
-//     let plotNumber;
-
-//     for (const phase of town.phases) {
-//       for (const plot of phase.plots) {
-//         const pNum = plot.plotNumbers.id(plotNumberId);
-//         if (pNum) {
-//           plotNumber = pNum;
-
-//           if (status) {
-//             plotNumber.status = status;
-//           }
-//           if (dealerName !== undefined) plotNumber.dealerName = dealerName;
-//           if (dealerContact !== undefined) plotNumber.dealerContact = dealerContact;
-
-//           await town.save();
-//           return res.json({ message: "Plot updated", plotNumber });
-//         }
-//       }
-//     }
-
-//     res.status(404).json({ error: "Plot number not found" });
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
-
-const updatePropertyStatusAndDealer = async (req, res) => {
-  const { propertyId } = req.params;
+const updatePlotStatusAndDealer = async (req, res) => {
+  const { plotNumberId } = req.params;
   const { status, dealerName, dealerContact } = req.body;
 
   try {
-    if (!mongoose.Types.ObjectId.isValid(propertyId)) {
-      return res.status(400).json({ error: "Invalid property ID format" });
-    }
-
-    const id = new mongoose.Types.ObjectId(propertyId);
-
-    // Find the town that contains either a plot or shop with this ID
     const town = await Town.findOne({
-      $or: [
-        { "phases.plots.plotNumbers._id": id },
-        { "phases.shops.shopNumbers._id": id },
-      ],
+      "phases.plots.plotNumbers._id": plotNumberId
     });
 
-    if (!town) {
-      return res.status(404).json({ error: "Property (plot/shop) not found" });
-    }
+    if (!town) return res.status(404).json({ error: "Plot number not found" });
 
-    let propertyType = null;
-    let propertyRef = null;
+    let plotNumber;
 
     for (const phase of town.phases) {
-      // Search in plots
       for (const plot of phase.plots) {
-        const foundPlot = plot.plotNumbers.id(id);
-        if (foundPlot) {
-          propertyType = "plot";
-          propertyRef = foundPlot;
-          break;
-        }
-      }
+        const pNum = plot.plotNumbers.id(plotNumberId);
+        if (pNum) {
+          plotNumber = pNum;
 
-      // Search in shops if not found in plots
-      if (!propertyRef && Array.isArray(phase.shops)) {
-        for (const shop of phase.shops) {
-          const foundShop = shop.shopNumbers.id(id);
-          if (foundShop) {
-            propertyType = "shop";
-            propertyRef = foundShop;
-            break;
+          if (status) {
+            plotNumber.status = status;
           }
+          if (dealerName !== undefined) plotNumber.dealerName = dealerName;
+          if (dealerContact !== undefined) plotNumber.dealerContact = dealerContact;
+
+          await town.save();
+          return res.json({ message: "Plot updated", plotNumber });
         }
       }
-
-      if (propertyRef) break;
     }
 
-    if (!propertyRef) {
-      return res.status(404).json({ error: "Property (plot/shop) not found" });
-    }
-
-    // Update only provided fields
-    if (status !== undefined) propertyRef.status = status;
-    if (dealerName !== undefined) propertyRef.dealerName = dealerName;
-    if (dealerContact !== undefined) propertyRef.dealerContact = dealerContact;
-
-    await town.save();
-
-    res.json({
-      message: `${propertyType === "shop" ? "Shop" : "Plot"} updated successfully`,
-      property: propertyRef,
-    });
+    res.status(404).json({ error: "Plot number not found" });
   } catch (err) {
-    console.error("Error updating property:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const updateShopStatusAndDealer = async (req, res) => {
+  const { shopNumberId } = req.params;
+  const { status, dealerName, dealerContact } = req.body;
+
+  try {
+    const town = await Town.findOne({
+      "phases.shops.shopNumbers._id": shopNumberId
+    });
+
+    if (!town) return res.status(404).json({ error: "Plot number not found" });
+
+    let shopNumber;
+
+    for (const phase of town.phases) {
+      for (const shop of phase.shops) {
+        const pNum = shop.shopNumbers.id(shopNumberId);
+        if (pNum) {
+          shopNumber = pNum;
+
+          if (status) {
+            shopNumber.status = status;
+          }
+          if (dealerName !== undefined) shopNumber.dealerName = dealerName;
+          if (dealerContact !== undefined) shopNumber.dealerContact = dealerContact;
+
+          await town.save();
+          return res.json({ message: "Plot updated", shopNumber });
+        }
+      }
+    }
+
+    res.status(404).json({ error: "Plot number not found" });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
@@ -424,8 +389,8 @@ module.exports = {
   getAllTowns,
   getTownsByUser,
   getTownById,
-  // updatePlotStatusAndDealer,
-  updatePropertyStatusAndDealer,
+  updatePlotStatusAndDealer,
+  updateShopStatusAndDealer,
   deleteDealerfromPlot,
   updateTownById,
   deleteTownById
