@@ -56,6 +56,62 @@ const io = new Server(server, {
 
 const onlineUsers = new Map();
 
+// io.on("connection", (socket) => {
+//     console.log("User connected:", socket.id);
+//     console.log("Query params:", socket.handshake.query);
+
+//     // Extract userId from handshake query
+//     const userId = socket.handshake.query.userId;
+//     if (userId) {
+//         socket.join(userId);
+//         console.log(`User ${userId} joined their room`);
+
+//         // Add user to online list
+//         socket.broadcast.emit("presence:online", userId);
+
+//         const onlineUserIds = Array.from(onlineUsers.keys());
+//         socket.emit("presence:list", onlineUserIds);
+//     }
+
+//     socket.on("join", (data) => {
+//         console.log("User joined:", data);
+//         if (data.userId) {
+//             socket.join(data.userId);
+//         }
+//     });
+
+//     socket.on("sendMessage", (data) => {
+//         console.log("Message received:", data);
+//         io.to(data.receiverId).emit("message", data);
+//     });
+
+//     socket.on("deleteMessage", (data) => {
+//         console.log("Delete message request:", data);
+//         io.to(data.receiverId).emit("messageDeleted", { messageId: data.messageId });
+//     });
+
+//     socket.on("markAsRead", (data) => {
+//         console.log("Mark as read:", data);
+//     });
+
+//     socket.on("markAllAsRead", (data) => {
+//         console.log("Mark all as read:", data);
+//     });
+
+//     socket.on("disconnect", (reason) => {
+//         console.log("User disconnected:", socket.id, reason);
+//         if (userId) {
+//             socket.broadcast.emit("presence:offline", userId);
+//         }
+//     });
+
+//     socket.on("error", (error) => {
+//         console.error("Socket error:", error);
+//     });
+// });
+
+// Get port from environment or use default
+
 io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
     console.log("Query params:", socket.handshake.query);
@@ -67,6 +123,7 @@ io.on("connection", (socket) => {
         console.log(`User ${userId} joined their room`);
 
         // Add user to online list
+        onlineUsers.set(userId, socket.id);
         socket.broadcast.emit("presence:online", userId);
 
         const onlineUserIds = Array.from(onlineUsers.keys());
@@ -82,12 +139,15 @@ io.on("connection", (socket) => {
 
     socket.on("sendMessage", (data) => {
         console.log("Message received:", data);
+        // Emit to both sender and receiver for real-time update
         io.to(data.receiverId).emit("message", data);
+        io.to(data.senderId).emit("message", data); // Also emit to sender for immediate update
     });
 
     socket.on("deleteMessage", (data) => {
         console.log("Delete message request:", data);
         io.to(data.receiverId).emit("messageDeleted", { messageId: data.messageId });
+        io.to(data.senderId).emit("messageDeleted", { messageId: data.messageId });
     });
 
     socket.on("markAsRead", (data) => {
@@ -98,9 +158,23 @@ io.on("connection", (socket) => {
         console.log("Mark all as read:", data);
     });
 
+    socket.on("typing", (data) => {
+        socket.to(data.receiverId).emit("userTyping", {
+            senderId: data.senderId,
+            isTyping: data.isTyping
+        });
+    });
+
+    socket.on("stopTyping", (data) => {
+        socket.to(data.receiverId).emit("userStoppedTyping", {
+            senderId: data.senderId
+        });
+    });
+
     socket.on("disconnect", (reason) => {
         console.log("User disconnected:", socket.id, reason);
         if (userId) {
+            onlineUsers.delete(userId);
             socket.broadcast.emit("presence:offline", userId);
         }
     });
@@ -110,7 +184,6 @@ io.on("connection", (socket) => {
     });
 });
 
-// Get port from environment or use default
 const PORT = process.env.PORT;
 server.listen(PORT, () => {
     console.log("MONGO_URL:", process.env.MONGO_URL);
